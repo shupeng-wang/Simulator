@@ -24,6 +24,10 @@ qt4_wrap_cpp(qt_mocs
 	${qt_hdrs}
 )
 
+# Copy configure file
+file(COPY ${PROJECT_SOURCE_DIR}/com.txt
+     DESTINATION ${PROJECT_BINARY_DIR}/)
+
 # translator
 #set(qt_lang trans_cn.ts)
 #qt4_add_translation(qt_translations ${qt_lang})

@@ -19,6 +19,9 @@ int main(int argc, char *argv[])
 	
 	QApplication app(argc, argv);
 	MasterDialog *dialog = new MasterDialog;
+	if ( !dialog->init() ) {
+		return 1;
+	}
 	dialog->show();
 
 	return app.exec();

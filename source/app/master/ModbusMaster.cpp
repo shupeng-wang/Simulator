@@ -16,8 +16,6 @@ ModbusMaster::ModbusMaster(unsigned char address)
 {
 	mDefaultAddress = address;
 	mWorkThread = 0;
-
-	init();
 }
 
 ModbusMaster::~ModbusMaster()
@@ -34,7 +32,7 @@ bool ModbusMaster::init()
 	bool ret;
 
 	std::ifstream file;
-	file.open(COM_CONF_FILENAME, std::ios::in|std::ios::nocreate);
+	file.open(COM_CONF_FILENAME, std::ios::in);
 	if ( !file ) {
 		return false;
 	}

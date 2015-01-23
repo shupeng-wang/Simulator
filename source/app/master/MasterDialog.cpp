@@ -4,8 +4,6 @@
 
 MasterDialog::MasterDialog(int inNum, int outNum)
 {
-	init();
-
 	createWidget();
 	createConnects();
 }
@@ -20,9 +18,10 @@ bool MasterDialog::init()
 	if ( mMaster && !mMaster->init() ) {
 		delete mMaster;
 		mMaster = 0;
+		return false;
 	}
 
-	mMaster->startPollint();
+	mMaster->startPolling();
 	return true;
 }
 
@@ -56,8 +55,10 @@ void MasterDialog::createConnects()
 {
 	connect(mReadButton, SIGNAL(pressed()), this, SLOT(read()));
 	connect(mWriteButton, SIGNAL(pressed()), this, SLOT(write()));
-	connect(mMaster, SIGNAL(risingEdge(unsigned char)), this, SLOT(startDetect(unsigned char)));
-	connect(mMaster, SIGNAL(fallingEdge()), this, SLOT(stopDetect()));
+	if ( mMaster ) {
+		connect(mMaster, SIGNAL(risingEdge(unsigned char)), this, SLOT(startDetect(unsigned char)));
+		connect(mMaster, SIGNAL(fallingEdge()), this, SLOT(stopDetect()));
+	}
 }
 
 void MasterDialog::read() 
@@ -67,6 +68,7 @@ void MasterDialog::read()
 	
 	if ( !mMaster ) {
 		mStatusBar->showMessage(tr("fail to open com"));
+		return;
 	}
 
 	if ( !mMaster->read(v) ) {
@@ -86,6 +88,7 @@ void MasterDialog::write()
 
 	if ( !mMaster ) {
 		mStatusBar->showMessage(tr("fail to open com"));
+		return;
 	}
 
 	v = mWriteEdit->text().toInt(&ok);

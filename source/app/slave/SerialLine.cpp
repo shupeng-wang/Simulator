@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <fstream>
 #include "Serial.h"
 
 #include "SerialLine.h"
@@ -30,7 +31,7 @@ bool SerialLine::init()
 	bool ret;
 
 	std::ifstream file;
-	file.open(COM_CONF_FILENAME, std::ios::in|std::ios::nocreate);
+	file.open(COM_CONF_FILENAME, std::ios::in);
 	if ( !file ) {
 		return false;
 	}
