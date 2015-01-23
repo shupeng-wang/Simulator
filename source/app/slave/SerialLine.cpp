@@ -1,3 +1,5 @@
+#include <QThread>
+#include <QtGui>
 #include <windows.h>
 #include <fstream>
 #include "Serial.h"
@@ -15,10 +17,15 @@
 SerialLine::SerialLine()
 {
 	mSerial = new CSerial;
+	mWorkerThread  = 0;
 }
 
 SerialLine::~SerialLine()
 {
+	if ( mWorkerThread ) {
+		stop();
+	}
+
 	mSerial->Close();
 	delete mSerial;
 }
@@ -123,16 +130,29 @@ void SerialLine::run()
 		}
 		::Sleep(100);
 	}
+	qDebug() << "Stop polling!\n";
 }
 
 void SerialLine::start()
 {
-	mRunning = true;
+	if ( mWorkerThread )
+		return;
 
-	QThread::start();
+	mRunning = true;
+	mWorkerThread = new QThread;
+	connect(mWorkerThread, SIGNAL(started()), this, SLOT(run()));
+	this->moveToThread(mWorkerThread);
+
+	mWorkerThread->start();
 }
 
 void SerialLine::stop()
 {
 	mRunning = false;
+
+	mWorkerThread->quit();
+	mWorkerThread->wait();
+	delete mWorkerThread;
+
+	mWorkerThread = 0;
 }

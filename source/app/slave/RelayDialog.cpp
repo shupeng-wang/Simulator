@@ -18,7 +18,14 @@ RelayDialog::RelayDialog(int inNum, int outNum)
 
 RelayDialog::~RelayDialog()
 {
+	delete mDevice;
+}
+
+void RelayDialog::closeEvent(QCloseEvent * event)
+{
 	mSlave->stop();
+	delete mSlave;
+	event->accept();
 }
 
 void RelayDialog::createWidget()

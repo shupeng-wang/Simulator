@@ -11,6 +11,7 @@ ModbusSlave::ModbusSlave(M7000DIO* dio, unsigned char address)
 
 	connect(mSerial, SIGNAL(receive(unsigned char*, int)), 
 		    this, SLOT(receive(unsigned char*, int)));	
+	//connect(this, SIGNAL(send(unsigned char*, int)), mSerial, SLOT(send(unsigned char*, int)));
 }
 
 ModbusSlave::~ModbusSlave()
@@ -21,7 +22,6 @@ ModbusSlave::~ModbusSlave()
 void ModbusSlave::start()
 {
 	// Set up serial port
-
 	mSerial->start();
 }
 

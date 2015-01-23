@@ -16,7 +16,7 @@ public:
 	RelayDialog(int inNum=8, int outNum=8);
 	~RelayDialog();
 
-public:
+	void closeEvent(QCloseEvent * event);
 
 protected:
 	void createWidget();

@@ -1,11 +1,12 @@
 #ifndef __Serial_Line_h
 #define __Serial_Line_h
 
-#include <QThread>
+#include <QObject>
 
+class QThread;
 class CSerial;
 
-class SerialLine : public QThread
+class SerialLine : public QObject
 {
 	Q_OBJECT
 public:
@@ -15,17 +16,19 @@ public:
 	bool init();
 	
 	void stop();
-
-	bool send(unsigned char* data, int len);
 	
-public slots:
 	void start();
-		
+
+public slots:
+	bool send(unsigned char* data, int len);
+
 signals:
 	void receive(unsigned char* data, int len);
 
+protected slots:
+		void run();
+
 protected:
-	void run();
 	bool read();
 	bool write(unsigned char* data, int len);
 
@@ -38,6 +41,8 @@ private:
 	CSerial *mSerial;
 
 	int mRuning;
+
+	QThread *mWorkerThread;
 };
 
 #endif
