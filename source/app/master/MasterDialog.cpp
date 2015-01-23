@@ -4,12 +4,15 @@
 
 MasterDialog::MasterDialog(int inNum, int outNum)
 {
+	mMaster = 0;
+
 	createWidget();
 	createConnects();
 }
 
 MasterDialog::~MasterDialog()
 {
+	delete mMaster;
 }
 
 bool MasterDialog::init()

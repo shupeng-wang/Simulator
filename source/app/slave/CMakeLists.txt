@@ -34,12 +34,9 @@ source_group("MOCS" FILES ${qt_mocs})
 
 link_directories(${CMAKE_BINARY_DIR}/libs)
 
-# -------------------------------------------------
-# 程序配置文件-程序运行时读取
-# -------------------------------------------------
-file(COPY ${CMAKE_SOURCE_DIR}/configure/
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/configure
-	 PATTERN *.*)
+# Copy configure file
+file(COPY ${PROJECT_SOURCE_DIR}/com.txt
+     DESTINATION ${PROJECT_BINARY_DIR}/)
 	 
 add_executable(${the_target} ${target_srcs} ${target_hdrs} ${qt_mocs} ${qt_translations})
 target_link_libraries(${the_target} ${QT_LIBRARIES})

@@ -19,7 +19,8 @@ SerialLine::SerialLine()
 
 SerialLine::~SerialLine()
 {
-
+	mSerial->Close();
+	delete mSerial;
 }
 
 bool SerialLine::init()

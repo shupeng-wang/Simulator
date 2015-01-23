@@ -59,7 +59,6 @@ bool ModbusSlave::checkRequest(unsigned char *data, int len)
 
 void ModbusSlave::processRequest(unsigned char* request, int len) 
 {
-	unsigned char func = request[0];
 	unsigned char buf[2];
 	unsigned char *pAddress = request;
 	unsigned char *pFunc = pAddress + 1;

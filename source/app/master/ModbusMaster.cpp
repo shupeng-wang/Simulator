@@ -20,6 +20,7 @@ ModbusMaster::ModbusMaster(unsigned char address)
 
 ModbusMaster::~ModbusMaster()
 {
+	mSerial->Close();
 	delete mSerial;
 }
 
@@ -224,6 +225,7 @@ void ModbusMaster::startPolling()
 
 	mWorkThread = new QThread(this);
 	connect(mWorkThread, SIGNAL(started()), this, SLOT(doPolling()));
+	this->moveToThread(mWorkThread);
 
 	mPolling = 1;
 	mWorkThread->start();
