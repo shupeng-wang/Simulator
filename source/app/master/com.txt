@@ -1,0 +1,5 @@
+name COM3
+baud 9600
+parity 0
+stop_bits 1
+data_bits 8
