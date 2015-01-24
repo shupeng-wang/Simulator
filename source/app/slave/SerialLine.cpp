@@ -126,7 +126,7 @@ void SerialLine::run()
 {
 	while ( mRunning ) {
 		if ( read() ) {
-			emit receive(mInBuffer, mInLength);
+			emit receiveEvent(mInBuffer, mInLength);
 		}
 		::Sleep(100);
 	}

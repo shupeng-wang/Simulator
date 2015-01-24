@@ -23,7 +23,7 @@ public slots:
 	bool send(unsigned char* data, int len);
 
 signals:
-	void receive(unsigned char* data, int len);
+	void receiveEvent(unsigned char* data, int len);
 
 protected slots:
 		void run();

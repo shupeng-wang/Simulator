@@ -9,8 +9,8 @@ ModbusSlave::ModbusSlave(M7000DIO* dio, unsigned char address)
 	mDevice = dio;
 	mSerial = new SerialLine;
 
-	connect(mSerial, SIGNAL(receive(unsigned char*, int)), 
-		    this, SLOT(receive(unsigned char*, int)));	
+	connect(mSerial, SIGNAL(receiveEvent(unsigned char*, int)), 
+		this, SLOT(receive(unsigned char*, int)), Qt::DirectConnection);	
 	//connect(this, SIGNAL(send(unsigned char*, int)), mSerial, SLOT(send(unsigned char*, int)));
 }
 
