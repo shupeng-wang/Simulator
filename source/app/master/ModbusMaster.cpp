@@ -1,3 +1,4 @@
+#include <Windows.h>
 #include <fstream>
 #include <qthread.h>
 #include "crc.h"
@@ -106,9 +107,13 @@ bool ModbusMaster::write(unsigned char v)
 	data[5] = v;
 	frame(mDefaultAddress, func_code, data, 6);
 
+	QMutexLocker locker(&mMutex);
+
 	if ( !writeData(buf, 6+4) ) {
 		return false;
 	}
+
+	wait(100);				// sleep a while for response
 
 	if ( !readData(buf, len) || len < 6) {
 		return false;
@@ -128,15 +133,17 @@ bool ModbusMaster::read(unsigned char& v)
 	int len = 0;
 	unsigned char func_code = 0x01;
 
-	buf[0] = buf[1] = 0;	// for DO output
-	buf[2] = 0; buf[3] = 8;	// number of output channels
-	buf[4] = 1;				// byte count
-	buf[5] = v;
-	frame(mDefaultAddress, func_code, data, 6);
+	data[0] = 0x00; data[1] = 0x20;	// read coil for DI channel
+	data[2] = 0x00; data[3] = 0x08;	// number of output channels
+	frame(mDefaultAddress, func_code, data, 4);
 
-	if ( !writeData(buf, 6+4) ) {
+	QMutexLocker locker(&mMutex);
+
+	if ( !writeData(buf, 4+4) ) {
 		return false;
 	}
+
+	wait(100);				// sleep a while for respose
 
 	if ( !readData(buf, len) || len < 4 ) {
 		return false;
@@ -190,6 +197,7 @@ bool ModbusMaster::readData(unsigned char* pdata, int& len)
 bool ModbusMaster::writeData(unsigned char* pdata, int len)
 {
 	DWORD dwWrite;
+
 	LONG lLastError = mSerial->Write(pdata, len, &dwWrite, 0, 100);
 	if ( len == (int)dwWrite ) {
 		return true;
@@ -223,10 +231,26 @@ void ModbusMaster::startPolling()
 		return;
 	}
 
-	mWorkThread = new QThread(this);
+	mWorkThread = new QThread;
 	connect(mWorkThread, SIGNAL(started()), this, SLOT(doPolling()));
 	this->moveToThread(mWorkThread);
 
 	mPolling = 1;
 	mWorkThread->start();
+}
+
+void ModbusMaster::stopPolling()
+{
+	mPolling = 0;
+
+	mWorkThread->quit();
+	mWorkThread->wait();
+	delete mWorkThread;
+
+	mWorkThread = 0;
+}
+
+void ModbusMaster::wait(int ms)
+{
+	::Sleep(ms);
 }

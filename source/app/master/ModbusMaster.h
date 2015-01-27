@@ -9,7 +9,8 @@
  */
 
 #include <QObject>
- 
+#include <QMutex>
+
 class QThread;
 class CSerial;
 
@@ -42,6 +43,7 @@ protected:
 	void frame(unsigned char address, unsigned char func, unsigned char *data,int n);	
 	bool readData(unsigned char* data, int& len);
 	bool writeData(unsigned char* data, int len);
+	void wait(int ms);
 
 private:
 	unsigned char mDefaultAddress;
@@ -49,6 +51,7 @@ private:
 	CSerial *mSerial;
 
 	QThread* mWorkThread;
+	QMutex mMutex;
 	int mPolling;
 };
 

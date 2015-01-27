@@ -12,7 +12,7 @@ MasterDialog::MasterDialog(int inNum, int outNum)
 
 MasterDialog::~MasterDialog()
 {
-	delete mMaster;
+	stopPolling();
 }
 
 bool MasterDialog::init()
@@ -23,9 +23,28 @@ bool MasterDialog::init()
 		mMaster = 0;
 		return false;
 	}
+	startPolling();
+	return true;
+}
+
+void MasterDialog::startPolling()
+{
+	if ( mMaster ) {
+		connect(mMaster, SIGNAL(risingEdge(unsigned char)), this, SLOT(startDetect(unsigned char)));
+		connect(mMaster, SIGNAL(fallingEdge()), this, SLOT(stopDetect()));
+	}
 
 	mMaster->startPolling();
-	return true;
+}
+
+void MasterDialog::stopPolling()
+{
+	if ( mMaster ) {
+		mMaster->stopPolling();
+		disconnect(mMaster, 0, 0, 0);
+		delete mMaster;
+		mMaster = 0;
+	}
 }
 
 void MasterDialog::createWidget()
@@ -58,10 +77,6 @@ void MasterDialog::createConnects()
 {
 	connect(mReadButton, SIGNAL(pressed()), this, SLOT(read()));
 	connect(mWriteButton, SIGNAL(pressed()), this, SLOT(write()));
-	if ( mMaster ) {
-		connect(mMaster, SIGNAL(risingEdge(unsigned char)), this, SLOT(startDetect(unsigned char)));
-		connect(mMaster, SIGNAL(fallingEdge()), this, SLOT(stopDetect()));
-	}
 }
 
 void MasterDialog::read() 
@@ -78,7 +93,7 @@ void MasterDialog::read()
 		mStatusBar->showMessage(tr("error on read"));
 		return;
 	}
-
+	mStatusBar->showMessage(tr("success in reading"));
 	text.setNum(v);
 	mReadEdit->setText(text);
 }
@@ -102,11 +117,16 @@ void MasterDialog::write()
 	if ( !mMaster->write(v) ) {
 		mStatusBar->showMessage(tr("error on write"));
 	}
+	else {
+		mStatusBar->showMessage(tr("success in writing"));
+	}
 }
 
 void MasterDialog::startDetect(unsigned char v )
 {
+	QString msg;
 	mStatusBar->showMessage(tr("start"));
+	mReadEdit->setText(msg.setNum(v));
 }
 
 void MasterDialog::stopDetect()

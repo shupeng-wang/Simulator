@@ -26,6 +26,8 @@ protected slots:
 	void write();
 	void startDetect(unsigned char v);
 	void stopDetect();
+	void startPolling();
+	void stopPolling();
 
 private:
 	QLineEdit *mReadEdit;
