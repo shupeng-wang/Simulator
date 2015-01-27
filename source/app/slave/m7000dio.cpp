@@ -60,5 +60,5 @@ void M7000DIO::write(int start, unsigned char* data, int type)
 	}
 
 	ptr[0] = data[0];
-	ptr[1] = data[0];
+	ptr[1] = data[1];
 }

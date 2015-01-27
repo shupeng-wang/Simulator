@@ -23,8 +23,8 @@ protected:
 	void createConnects();
 
 protected slots:
-	void outputChanged(int id);
-	void inputChanged();
+	void inputChanged(int id);
+	void outputChanged();
 
 private:
 	QCheckBox **mInput;

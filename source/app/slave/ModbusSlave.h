@@ -20,8 +20,10 @@ class ModbusSlave : public QObject
 	enum {IDLE, WAITING_DELAY, WAITING_REPLY, PROCESSING_REPLY, PROCESSING_ERROR};
 
 public:
-	ModbusSlave(M7000DIO *dio, unsigned char address=1);
+	ModbusSlave(M7000DIO *dio);
 	~ModbusSlave();
+
+	bool init();
 
 	void start();
 	void stop();
