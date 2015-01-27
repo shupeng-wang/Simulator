@@ -4,7 +4,7 @@
 #include "ModbusSlave.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-ModbusSlave::ModbusSlave(M7000DIO* dio, unsigned char address)
+ModbusSlave::ModbusSlave(M7000DIO* dio)
 {
 	mDevice = dio;
 	mSerial = new SerialLine;
@@ -17,6 +17,14 @@ ModbusSlave::ModbusSlave(M7000DIO* dio, unsigned char address)
 ModbusSlave::~ModbusSlave()
 {
 	delete mSerial;
+}
+
+bool ModbusSlave::init()
+{
+	if (mSerial) {
+		return mSerial->init();
+	}
+	return false;
 }
 
 void ModbusSlave::start()
@@ -49,12 +57,13 @@ bool ModbusSlave::checkRequest(unsigned char *data, int len)
 
 	// CRC check 
 	unsigned char v1, v2;
-	uint16 crc_val = crc16(data, len);
+	uint16 crc_val = crc16(data, len-2);
 	v1 = crc_val >> 8;
 	v2 = crc_val & 0xff;
 	if ( (v1 != data[len-2]) || (v2 != data[len-1]) ) {
 		return false;
 	}
+	return true;
 }
 
 void ModbusSlave::processRequest(unsigned char* request, int len) 
@@ -68,8 +77,8 @@ void ModbusSlave::processRequest(unsigned char* request, int len)
 	switch( *pFunc ) 
 	{
 	case FUNC_READ_COILS:
-		start = *((short*)pData);
-		num = *((short*)pData+2);
+		start = (pData[0]<<8) + pData[1];
+		num = (pData[2]<<8) + pData[3];
 		if (mDevice->read(start, num, buf)) {
 			frame(mDevice->getAddress(), 0x01, 1, buf);
 		}
@@ -79,9 +88,9 @@ void ModbusSlave::processRequest(unsigned char* request, int len)
 		reply(mBuffer, mDataLength);
 		break;
 	case FUNC_WRITE_COILS:
-		start = *((short*)pData);
-		num = *((short*)pData+2);
-		buf[0] = *(pData+4);
+		start = (pData[0]<<8) + pData[1];;
+		num = (pData[2]<<8) + pData[3];
+		buf[0] = pData[5];
 		if (mDevice->write(start, num, &buf[0])) {
 			frame(mDevice->getAddress(), FUNC_WRITE_COILS, 4, pData);
 		}
@@ -89,6 +98,7 @@ void ModbusSlave::processRequest(unsigned char* request, int len)
 			frameError(mDevice->getAddress(), 0x8F, 0);
 		}
 		reply(mBuffer, mDataLength);
+		emit update();
 		break;
 	default:
 		;
@@ -111,10 +121,10 @@ void ModbusSlave::frame(unsigned char address, unsigned char func,
 	uint16 crc_val = crc16(mBuffer, n+3);
 	v1 = crc_val >> 8;
 	v2 = crc_val & 0xff;
-	mBuffer[n+4] = v1;
-	mBuffer[n+5] = v2;
+	mBuffer[n+3] = v1;
+	mBuffer[n+4] = v2;
 
-	mDataLength = n+6;
+	mDataLength = n+5;
 }	                   
 
 void ModbusSlave::frameError(unsigned char address, unsigned char func, 

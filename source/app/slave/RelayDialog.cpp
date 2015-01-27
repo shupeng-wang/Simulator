@@ -6,12 +6,17 @@
 RelayDialog::RelayDialog(int inNum, int outNum)
 {
 	mDevice = new M7000DIO;
-	mSlave = new ModbusSlave(mDevice, 1);
+	mSlave = new ModbusSlave(mDevice);
+	if ( mSlave->init() ) {
+		mSlave->start();
+	}
+	else {
+		delete mSlave;
+		mSlave = 0;
+	}
+
 	mInputNumber = mDevice->getInNumber();
 	mOutputNumber = mDevice->getOutNumber();
-
-	mSlave->start();
-
 	createWidget();
 	createConnects();
 }
@@ -23,8 +28,11 @@ RelayDialog::~RelayDialog()
 
 void RelayDialog::closeEvent(QCloseEvent * event)
 {
-	mSlave->stop();
-	delete mSlave;
+	if ( mSlave ) {
+		mSlave->stop();
+		delete mSlave;
+	}
+	delete mDevice;
 	event->accept();
 }
 
@@ -39,7 +47,7 @@ void RelayDialog::createWidget()
 		sprintf(label, "in %d", i);
 		mInput[i] = new QCheckBox(label);
 		mInput[i]->setChecked(mDevice->getInChannel(i));
-		mInput[i]->setEnabled(false);
+		mInput[i]->setEnabled(true);
 		inputLayout->addWidget(mInput[i]);
 	}
 	QGroupBox *inputGroup = new QGroupBox(tr("Input State"));
@@ -51,7 +59,7 @@ void RelayDialog::createWidget()
 		sprintf(label, "out %d", i);
 		mOutput[i] = new QCheckBox(label);
 		mOutput[i]->setChecked(mDevice->getOutChannel(i));
-		mOutput[i]->setEnabled(true);
+		mOutput[i]->setEnabled(false);
 		outputLayout->addWidget(mOutput[i]);
 	}
 	QGroupBox *outputGroup = new QGroupBox(tr("Output State"));
@@ -68,29 +76,29 @@ void RelayDialog::createConnects()
 	int i;
 
 	QSignalMapper *mapper = new QSignalMapper(this);
-	for ( i = 0; i < mOutputNumber; i++ ) {
-		connect(mOutput[i], SIGNAL(toggled(bool)), mapper, SLOT(map()));
-		mapper->setMapping(mOutput[i], i);
+	for ( i = 0; i < mInputNumber; i++ ) {
+		connect(mInput[i], SIGNAL(toggled(bool)), mapper, SLOT(map()));
+		mapper->setMapping(mInput[i], i);
 	}
-	connect((mapper), SIGNAL(mapped(int)), this, SLOT(outputChanged(int)));
+	connect((mapper), SIGNAL(mapped(int)), this, SLOT(inputChanged(int)));
 	mSignalMapper = mapper;
 
-	connect(mSlave, SIGNAL(update()), this, SLOT(inputChanged()));
+	connect(mSlave, SIGNAL(update()), this, SLOT(outputChanged()));
 }
 
-void RelayDialog::outputChanged(int id) 
+void RelayDialog::inputChanged(int id) 
 {
-	if ( mOutput[id]->isChecked() ) {
-		mDevice->setOutChannel(id, 1);
+	if ( mInput[id]->isChecked() ) {
+		mDevice->setInChannel(id, 1);
 	}
 	else {
-		mDevice->setOutChannel(id, 0);
+		mDevice->setInChannel(id, 0);
 	}
 }
 
-void RelayDialog::inputChanged()
+void RelayDialog::outputChanged()
 {
-	for ( int i = 0; i < mInputNumber; i++ ) {
-		mInput[i]->setChecked(mDevice->getInChannel(i));
+	for ( int i = 0; i < mOutputNumber; i++ ) {
+		mOutput[i]->setChecked(mDevice->getOutChannel(i));
 	}
 }
